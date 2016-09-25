@@ -431,6 +431,7 @@ public class JIDE extends JFrame {
 		@Override
 		public void keyPressed(KeyEvent arg0) {
 			if(arg0.getKeyCode() == KeyEvent.VK_ENTER) {
+				if(!area2.isEditable()) return;
 				moved = 0;
 				try {
 					sendMsg(addedText);
