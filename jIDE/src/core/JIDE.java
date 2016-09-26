@@ -1,6 +1,8 @@
 package core;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
@@ -8,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -16,8 +19,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+
+/*
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+*/
 
 import core.keylisteners.ConsoleKeyListener;
 import core.system.ActionManager;
@@ -27,8 +35,8 @@ public class JIDE extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	public static JTextArea area = new JTextArea(20, 120);
-	public static JTextArea area2 = new JTextArea(20, 60);
+	public static JTextPane editor = new JTextPane();
+	public static JTextPane console = new JTextPane();
 	public static JFileChooser dialog = new JFileChooser(System.getProperty("user.dir"));
 	public static String currentFile = "Untitled";
 	public boolean changed = false, saved = false;
@@ -62,28 +70,40 @@ public class JIDE extends JFrame {
 	
 	private final int OS = System.getProperty("os.name").toLowerCase().contains("windows") ? Constants.WINDOWS
 			: (System.getProperty("os.name").toLowerCase().contains("mac") ? Constants.MAC : Constants.LINUX);
-	
-	/* TEMPORARY */
-	
+		
 	public JIDE() {
+		/*
+		try {
+			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e1) {
+			e1.printStackTrace();
+		}
+		*/
 		Constants.init(OS);
 		
 		ActionManager.init(this);
 		FileManager.init(this);
 		
-		area.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		area2.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		area2.setEditable(false);
-
+		editor.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		console.setFont(new Font("Courier", Font.PLAIN, 12));
+		console.setEditable(false);
+		// TODO: New Color with more contrast
+		console.setForeground(new Color(0, 255, 180));
+		console.setBackground(new Color(210, 210, 210));
+		
 		keyListener = new ConsoleKeyListener();
 
-		area2.addKeyListener(keyListener);
-		area.addKeyListener(saveKeyListener);
+		console.addKeyListener(keyListener);
+		editor.addKeyListener(saveKeyListener);
 
-		JScrollPane scroll = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		JScrollPane scroll = new JScrollPane(editor, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		JScrollPane scroll2 = new JScrollPane(area2, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+		JScrollPane scroll2 = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scroll.setPreferredSize(new Dimension(720, 320));
+		scroll2.setPreferredSize(new Dimension(720, 160));
+		
 		add(scroll, BorderLayout.CENTER);
 		add(scroll2, BorderLayout.SOUTH);
 

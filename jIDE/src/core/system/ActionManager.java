@@ -33,11 +33,11 @@ public class ActionManager {
 				FileManager.saveFile(JIDE.currentFile);
 				jideInstance.setTitle(JIDE.currentFile);
 				Terminate.setEnabled(true);
-				JIDE.area2.setText("");
+				JIDE.console.setText("");
 				ConsoleManager.addedText = "";
-				JIDE.area2.setEditable(true);
+				JIDE.console.setEditable(true);
 				ConsoleManager.buildAndRun(JIDE.currentFile);
-				JIDE.area2.setEditable(false);
+				JIDE.console.setEditable(false);
 			}
 		}
 	};
@@ -57,8 +57,8 @@ public class ActionManager {
 			if (ConsoleManager.pr.isAlive())
 				ConsoleManager.pr.destroyForcibly();
 
-			JIDE.area2.setEditable(false);
-			JIDE.area2.setText("");
+			JIDE.console.setEditable(false);
+			JIDE.console.setText("");
 			ConsoleManager.addedText = "";
 		}
 	};
@@ -75,7 +75,7 @@ public class ActionManager {
 				FileManager.saveFile(JIDE.currentFile);
 			}
 
-			JIDE.area.setText("");
+			JIDE.editor.setText("");
 			JIDE.currentFile = "Untitled";
 			jideInstance.setTitle(JIDE.currentFile);
 			jideInstance.changed = false;
@@ -140,7 +140,7 @@ public class ActionManager {
 		}
 	};
 
-	private static ActionMap m = JIDE.area.getActionMap();
+	private static ActionMap m = JIDE.editor.getActionMap();
 	public static Action Cut = m.get(DefaultEditorKit.cutAction);
 	public static Action Copy = m.get(DefaultEditorKit.copyAction);
 	public static Action Paste = m.get(DefaultEditorKit.pasteAction);

@@ -1,5 +1,6 @@
 package core.system;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,6 +11,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.swing.JOptionPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import core.Constants;
 import core.JIDE;
@@ -80,7 +85,7 @@ public class ConsoleManager {
 		if(buildFailed && !run) return;
 		
 		pr = Runtime.getRuntime().exec(fileName.substring(0, fileName.length() - 2) + Constants.PROG_EXTENSION);
-		JIDE.area2.setEditable(true);
+		JIDE.console.setEditable(true);
 
 		// UNUSED:
 		// InputStream stderr = pr.getErrorStream();
@@ -93,12 +98,20 @@ public class ConsoleManager {
 		String line;
 
 		while (pr.isAlive()) {
-			while ((line = reader_out.readLine()) != null)
-				JIDE.area2.append(line + "\n");
+			while ((line = reader_out.readLine()) != null) {
+				StyledDocument doc = JIDE.console.getStyledDocument();
+				Style style = JIDE.console.addStyle("OUTPUT_STYLE", null);
+				StyleConstants.setForeground(style, Color.BLUE);
+				try {
+					doc.insertString(doc.getLength(), line + "\n", style);
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
 			pr.waitFor();
 		}
 
-		JIDE.area2.setEditable(false);
+		JIDE.console.setEditable(false);
 
 		ActionManager.Terminate.setEnabled(false);
 	}
@@ -118,7 +131,7 @@ public class ConsoleManager {
 		try {
 			build(fileName);
 			addedText = new String();
-			JIDE.area2.setText("");
+			JIDE.console.setText("");
 
 			new Thread() {
 				public void run() {
