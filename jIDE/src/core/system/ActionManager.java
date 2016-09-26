@@ -1,4 +1,4 @@
-package core;
+package core.system;
 
 import java.awt.event.ActionEvent;
 
@@ -9,6 +9,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.text.DefaultEditorKit;
+
+import core.JIDE;
 
 public class ActionManager {
 	private static JIDE jideInstance;

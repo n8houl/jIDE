@@ -1,4 +1,4 @@
-package core;
+package core.system;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,6 +9,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.swing.JOptionPane;
+
+import core.Constants;
+import core.JIDE;
 
 public class ConsoleManager {
 	public static String addedText;
