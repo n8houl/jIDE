@@ -1,5 +1,5 @@
 # To Do for v0.0.2
-- [X] Add functionality for different languages: i.e. Java, CPP, Python
+- [ ] Add functionality for different languages: i.e. Java, CPP, Python
 - [ ] Add a preferences page for changing different options such as langauge
 - [ ] Fix the stdin b4 the stdout handling bug
 - [ ] Convert JTextAreas to JEditorPanes
