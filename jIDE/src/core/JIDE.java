@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -20,6 +19,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 
+import core.keylisteners.ConsoleKeyListener;
+import core.system.ActionManager;
+import core.system.FileManager;
+
 public class JIDE extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -30,8 +33,33 @@ public class JIDE extends JFrame {
 	public static String currentFile = "Untitled";
 	public boolean changed = false, saved = false;
 
-	final ConsoleKeyListener keyListener;
+	/// TODO: Change name to consoleKeyListener
+	private final ConsoleKeyListener keyListener;
 
+	private final KeyListener saveKeyListener = new KeyAdapter() {
+		public void keyPressed(KeyEvent e) {
+			String title = "";
+			if (e.getKeyCode() == KeyEvent.VK_S && ((e.getModifiers() & ((OS == Constants.WINDOWS || OS == Constants.LINUX)
+					? KeyEvent.CTRL_MASK : Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())) != 0)) {
+				changed = false;
+				ActionManager.Save.setEnabled(false);
+				ActionManager.SaveAs.setEnabled(false);
+				if (currentFile.equals("Untitled"))
+					FileManager.saveFileAs();
+				else
+					FileManager.saveFile(currentFile);
+				title = currentFile;
+			} else {
+				changed = true;
+				ActionManager.Save.setEnabled(true);
+				ActionManager.SaveAs.setEnabled(true);
+				title = "*" + currentFile;
+			}
+
+			setTitle(title);
+		}
+	};
+	
 	private final int OS = System.getProperty("os.name").toLowerCase().contains("windows") ? Constants.WINDOWS
 			: (System.getProperty("os.name").toLowerCase().contains("mac") ? Constants.MAC : Constants.LINUX);
 	
@@ -50,7 +78,7 @@ public class JIDE extends JFrame {
 		keyListener = new ConsoleKeyListener();
 
 		area2.addKeyListener(keyListener);
-		area.addKeyListener(k);
+		area.addKeyListener(saveKeyListener);
 
 		JScrollPane scroll = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -149,88 +177,5 @@ public class JIDE extends JFrame {
 		setTitle(currentFile);
 		setLocationRelativeTo(null);
 		setVisible(true);
-	}
-
-	private KeyListener k = new KeyAdapter() {
-		public void keyPressed(KeyEvent e) {
-			String title = "";
-			if (e.getKeyCode() == KeyEvent.VK_S && ((e.getModifiers() & ((OS == Constants.WINDOWS || OS == Constants.LINUX)
-					? KeyEvent.CTRL_MASK : Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())) != 0)) {
-				changed = false;
-				ActionManager.Save.setEnabled(false);
-				ActionManager.SaveAs.setEnabled(false);
-				if (currentFile.equals("Untitled"))
-					FileManager.saveFileAs();
-				else
-					FileManager.saveFile(currentFile);
-				title = currentFile;
-			} else {
-				changed = true;
-				ActionManager.Save.setEnabled(true);
-				ActionManager.SaveAs.setEnabled(true);
-				title = "*" + currentFile;
-			}
-
-			setTitle(title);
-		}
-	};
-
-	
-
-	
-
-	
-
-	public static void main(String args[]) {
-		new JIDE();
-	}
-
-	class ConsoleKeyListener implements KeyListener {
-		@Override
-		public void keyPressed(KeyEvent arg0) {
-			if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-				if (!area2.isEditable())
-					return;
-				ConsoleManager.moved = 0;
-				try {
-					ConsoleManager.sendMsg(ConsoleManager.addedText);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				ConsoleManager.addedText = "";
-			} else if (arg0.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-				if (ConsoleManager.moved == 0)
-					ConsoleManager.addedText = ConsoleManager.addedText.substring(0, ConsoleManager.addedText.length() - 1);
-				else {
-					String first = ConsoleManager.addedText.substring(0, ConsoleManager.addedText.length() + ConsoleManager.moved);
-					String second = ConsoleManager.addedText.substring(ConsoleManager.addedText.length() + ConsoleManager.moved, ConsoleManager.addedText.length());
-					first = first.substring(0, first.length() - 1);
-					ConsoleManager.addedText = first + second;
-				}
-			} else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
-				ConsoleManager.moved -= 1;
-			} else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
-				ConsoleManager.moved += 1;
-				if (ConsoleManager.moved == 0)
-					ConsoleManager.moved = 0;
-			} else {
-				if (ConsoleManager.moved == 0)
-					ConsoleManager.addedText += arg0.getKeyChar();
-				else {
-					String first = ConsoleManager.addedText.substring(0, ConsoleManager.addedText.length() + ConsoleManager.moved);
-					String second = ConsoleManager.addedText.substring(ConsoleManager.addedText.length() + ConsoleManager.moved, ConsoleManager.addedText.length());
-					ConsoleManager.addedText = first + arg0.getKeyChar() + second;
-				}
-			}
-		}
-
-		@Override
-		public void keyReleased(KeyEvent arg0) {
-		}
-
-		@Override
-		public void keyTyped(KeyEvent arg0) {
-		}
 	}
 }
