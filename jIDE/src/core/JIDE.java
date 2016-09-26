@@ -33,6 +33,7 @@ public class JIDE extends JFrame {
 	public static String currentFile = "Untitled";
 	public boolean changed = false, saved = false;
 
+	/// TODO: Change name to consoleKeyListener
 	private final ConsoleKeyListener keyListener;
 
 	private final KeyListener saveKeyListener = new KeyAdapter() {

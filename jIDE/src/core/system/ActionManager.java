@@ -29,7 +29,9 @@ public class ActionManager {
 			if (JIDE.currentFile.equals("Untitled")) {
 				FileManager.saveFileAs();
 			}
-			if (jideInstance.saved || !JIDE.currentFile.equals("Untitled")) {
+			if (!JIDE.currentFile.equals("Untitled")) {
+				FileManager.saveFile(JIDE.currentFile);
+				jideInstance.setTitle(JIDE.currentFile);
 				Terminate.setEnabled(true);
 				JIDE.area2.setText("");
 				ConsoleManager.addedText = "";

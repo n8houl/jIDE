@@ -2,6 +2,7 @@ package core.system;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,6 +17,7 @@ import core.JIDE;
 public class ConsoleManager {
 	public static String addedText;
 	public static int moved;
+	private static boolean buildFailed = false, run = false;
 	
 	private static JIDE jideInstance;
 	public static Process pr;
@@ -26,13 +28,13 @@ public class ConsoleManager {
 		addedText = "";
 	}
 	
-	/*
-	 * TODO: Add Code to delete previous build
-	 */
 	private static void build(String fileName) throws InterruptedException, IOException {
+		File f = new File(fileName.substring(0, fileName.length() - 2) + Constants.PROG_EXTENSION);
+		
 		Runtime rt = Runtime.getRuntime();
+		
 		pr = rt.exec("gcc " + fileName + " -o " + fileName.substring(0, fileName.length() - 2) + Constants.PROG_EXTENSION);
-
+		
 		BufferedReader build_errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 		String line;
 		String msg = "";
@@ -41,12 +43,33 @@ public class ConsoleManager {
 			msg += "\n";
 		}
 
+		buildFailed = false;
+		
 		if (!msg.equals("")) {
-			JOptionPane.showMessageDialog(jideInstance, "Could not compile! Errors: \n" + msg);
+			String optionButtons[] = { "Yes", "No" };
+			if(JOptionPane.showOptionDialog(null, "Build Failed:\n" + msg + "\nWould you like to run a previous build?",
+					"Build Failed!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, optionButtons,
+					optionButtons[0]) == JOptionPane.YES_OPTION) {
+				if(f.exists() && !f.isDirectory()) {
+					buildFailed = true;
+					run = true;
+				} else {
+					JOptionPane.showMessageDialog(jideInstance, "No previous builds found.");
+					buildFailed = true;
+					run = false;
+				}
+			} else {
+				buildFailed = true;
+				run = false;
+			}
 		}
 
 		pr.waitFor();
 		pr.destroy();
+		
+		f = new File(fileName.substring(0, fileName.length() - 2) + Constants.PROG_EXTENSION);
+		
+		if(f.exists() && !f.isDirectory() && !buildFailed) System.out.println("Built to " + f.getAbsolutePath() + " successfully.");		
 	}
 
 	/*
@@ -54,6 +77,8 @@ public class ConsoleManager {
 	 * handling
 	 */
 	private static void runEXE(String fileName) throws IOException, InterruptedException {
+		if(buildFailed && !run) return;
+		
 		pr = Runtime.getRuntime().exec(fileName.substring(0, fileName.length() - 2) + Constants.PROG_EXTENSION);
 		JIDE.area2.setEditable(true);
 
