@@ -35,7 +35,7 @@ public class FileManager {
 	public static void readInFile(String fileName) {
 		try {
 			FileReader r = new FileReader(fileName);
-			JIDE.area.read(r, null);
+			JIDE.editor.read(r, null);
 			r.close();
 			jideInstance.getContentPane();
 			JIDE.currentFile = fileName;
@@ -50,7 +50,7 @@ public class FileManager {
 	public static void saveFile(String fileName) {
 		try {
 			FileWriter w = new FileWriter(fileName);
-			JIDE.area.write(w);
+			JIDE.editor.write(w);
 			w.close();
 			JIDE.currentFile = fileName;
 

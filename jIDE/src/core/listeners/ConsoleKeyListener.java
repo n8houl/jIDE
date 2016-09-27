@@ -1,4 +1,4 @@
-package core.keylisteners;
+package core.listeners;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -11,7 +11,7 @@ public class ConsoleKeyListener implements KeyListener {
 	@Override
 	public void keyPressed(KeyEvent arg0) {
 		if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-			if (!JIDE.area2.isEditable())
+			if (!JIDE.console.isEditable())
 				return;
 			ConsoleManager.moved = 0;
 			try {
