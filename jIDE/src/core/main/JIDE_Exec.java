@@ -4,6 +4,11 @@ import core.JIDE;
 
 public class JIDE_Exec {
 	public static void main(String args[]) {
-		new JIDE();
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				new JIDE();
+			}
+		});
 	}
 }

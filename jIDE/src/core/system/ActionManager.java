@@ -97,6 +97,8 @@ public class ActionManager {
 			}
 
 			SaveAs.setEnabled(true);
+			
+			jideInstance.updateSyntaxHighlighting();
 		}
 	};
 

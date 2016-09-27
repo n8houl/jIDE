@@ -10,6 +10,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,13 +23,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
-
-/*
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-*/
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
-import core.keylisteners.ConsoleKeyListener;
+import core.listeners.ConsoleKeyListener;
 import core.system.ActionManager;
 import core.system.FileManager;
 
@@ -41,14 +46,14 @@ public class JIDE extends JFrame {
 	public static String currentFile = "Untitled";
 	public boolean changed = false, saved = false;
 
-	/// TODO: Change name to consoleKeyListener
-	private final ConsoleKeyListener keyListener;
+	private final ConsoleKeyListener consoleKeyListener;
 
 	private final KeyListener saveKeyListener = new KeyAdapter() {
 		public void keyPressed(KeyEvent e) {
 			String title = "";
-			if (e.getKeyCode() == KeyEvent.VK_S && ((e.getModifiers() & ((OS == Constants.WINDOWS || OS == Constants.LINUX)
-					? KeyEvent.CTRL_MASK : Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())) != 0)) {
+			if (e.getKeyCode() == KeyEvent.VK_S
+					&& ((e.getModifiers() & ((OS == Constants.WINDOWS || OS == Constants.LINUX) ? KeyEvent.CTRL_MASK
+							: Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())) != 0)) {
 				changed = false;
 				ActionManager.Save.setEnabled(false);
 				ActionManager.SaveAs.setEnabled(false);
@@ -67,34 +72,49 @@ public class JIDE extends JFrame {
 			setTitle(title);
 		}
 	};
-	
+
 	private final int OS = System.getProperty("os.name").toLowerCase().contains("windows") ? Constants.WINDOWS
 			: (System.getProperty("os.name").toLowerCase().contains("mac") ? Constants.MAC : Constants.LINUX);
-		
+
 	public JIDE() {
-		/*
 		try {
-			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e1) {
 			e1.printStackTrace();
 		}
-		*/
+
 		Constants.init(OS);
-		
+
 		ActionManager.init(this);
 		FileManager.init(this);
-		
+
 		editor.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		console.setFont(new Font("Courier", Font.PLAIN, 12));
 		console.setEditable(false);
-		// TODO: New Color with more contrast
-		console.setForeground(new Color(0, 255, 180));
+		
+		console.setForeground(new Color(0, 153, 0));
 		console.setBackground(new Color(210, 210, 210));
 		
-		keyListener = new ConsoleKeyListener();
+		editor.getStyledDocument().addDocumentListener(new DocumentListener() {
 
-		console.addKeyListener(keyListener);
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateSyntaxHighlighting();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateSyntaxHighlighting();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {}		
+		});
+		
+		consoleKeyListener = new ConsoleKeyListener();
+
+		console.addKeyListener(consoleKeyListener);
 		editor.addKeyListener(saveKeyListener);
 
 		JScrollPane scroll = new JScrollPane(editor, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -103,7 +123,7 @@ public class JIDE extends JFrame {
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setPreferredSize(new Dimension(720, 320));
 		scroll2.setPreferredSize(new Dimension(720, 160));
-		
+
 		add(scroll, BorderLayout.CENTER);
 		add(scroll2, BorderLayout.SOUTH);
 
@@ -153,7 +173,8 @@ public class JIDE extends JFrame {
 
 		tool.addSeparator();
 
-		JButton cut = tool.add(ActionManager.Cut), cop = tool.add(ActionManager.Copy), pas = tool.add(ActionManager.Paste);
+		JButton cut = tool.add(ActionManager.Cut), cop = tool.add(ActionManager.Copy),
+				pas = tool.add(ActionManager.Paste);
 
 		cut.setText(null);
 		cut.setToolTipText("Cut");
@@ -197,5 +218,60 @@ public class JIDE extends JFrame {
 		setTitle(currentFile);
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+	
+	public synchronized void updateSyntaxHighlighting() {
+		Pattern patternKeyword = Pattern.compile("\\(?\\s*(int|float|char|return|double|void)\\**\\s*\\)?");
+		Pattern patternPrint = Pattern.compile("print");
+		Pattern patternInclude = Pattern.compile("#include\\s*(<|\").*(\"|>)");
+		Pattern patternString = Pattern.compile("\".*\"");
+		Runnable syntaxMatcher = new Runnable() {
+			public void run() {
+				try {
+					SimpleAttributeSet defaultSet = new SimpleAttributeSet();
+					editor.getStyledDocument().setCharacterAttributes(0, editor.getStyledDocument().getLength(), defaultSet, true);
+					
+					Matcher matcher = patternKeyword.matcher(editor.getStyledDocument().getText(0, editor.getStyledDocument().getLength()));
+					SimpleAttributeSet keywordSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(keywordSet, Color.BLUE);
+					StyleConstants.setBold(keywordSet, true);
+					
+					SimpleAttributeSet printSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(printSet, Color.BLACK);
+					StyleConstants.setBold(printSet, false);
+					
+					SimpleAttributeSet stringSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(stringSet, Color.RED);
+					StyleConstants.setBold(stringSet, false);
+					
+					SimpleAttributeSet includeSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(includeSet, new Color(204, 102, 0));
+					StyleConstants.setBold(includeSet, false);
+					
+					while(matcher.find()) {
+						editor.getStyledDocument().setCharacterAttributes(matcher.start(1), matcher.end(1) - matcher.start(1), keywordSet, false);
+					}
+					
+					matcher = patternPrint.matcher(editor.getStyledDocument().getText(0, editor.getStyledDocument().getLength()));
+					while(matcher.find()) {
+						editor.getStyledDocument().setCharacterAttributes(matcher.start(), matcher.end()-matcher.start(), printSet, false);
+					}
+					
+					matcher = patternInclude.matcher(editor.getStyledDocument().getText(0, editor.getStyledDocument().getLength()));
+					while(matcher.find()) {
+						editor.getStyledDocument().setCharacterAttributes(matcher.start(), matcher.end() - matcher.start(), includeSet, false);
+					}
+					
+					matcher = patternString.matcher(editor.getStyledDocument().getText(0, editor.getStyledDocument().getLength()));
+					while(matcher.find()) {
+						editor.getStyledDocument().setCharacterAttributes(matcher.start(), matcher.end()-matcher.start(), stringSet, false);
+					}
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		SwingUtilities.invokeLater(syntaxMatcher);
 	}
 }
