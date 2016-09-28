@@ -48,6 +48,8 @@ public class JIDE extends JFrame {
 
 	private final ConsoleKeyListener consoleKeyListener;
 
+	public static String workspaceDir;
+	
 	private final KeyListener saveKeyListener = new KeyAdapter() {
 		public void keyPressed(KeyEvent e) {
 			String title = "";
@@ -76,7 +78,9 @@ public class JIDE extends JFrame {
 	private final int OS = System.getProperty("os.name").toLowerCase().contains("windows") ? Constants.WINDOWS
 			: (System.getProperty("os.name").toLowerCase().contains("mac") ? Constants.MAC : Constants.LINUX);
 
-	public JIDE() {
+	public JIDE(String workspaceDir) {
+		JIDE.workspaceDir = workspaceDir;
+		System.out.println(JIDE.workspaceDir);
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
