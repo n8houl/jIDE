@@ -58,7 +58,6 @@ public class JIDE_Exec {
 				System.exit(0);
 			}
 		} else {
-			
 			Scanner scanner = null;
 			try {
 				scanner = new Scanner(new FileInputStream(file));
