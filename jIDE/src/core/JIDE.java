@@ -166,7 +166,13 @@ public class JIDE extends JFrame {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-				System.out.println("You selected " + node);
+				String path = node.toString();
+				while(!node.toString().equals("workspace") && node != null) {
+					node = (DefaultMutableTreeNode) node.getParent();
+					path = node + File.separator + path;
+				}
+				
+				System.out.println(workspaceDir.substring(0, workspaceDir.lastIndexOf(File.separator)+1) + path);
 			}
 
 		});
@@ -286,13 +292,13 @@ public class JIDE extends JFrame {
 		if (curTop != null) { // should only be null at root
 			curTop.add(curDir);
 		}
-		Vector ol = new Vector();
+		Vector<String> ol = new Vector<String>();
 		String[] tmp = dir.list();
 		for (int i = 0; i < tmp.length; i++)
 			ol.addElement(tmp[i]);
 		Collections.sort(ol, String.CASE_INSENSITIVE_ORDER);
 		File f;
-		Vector files = new Vector();
+		Vector<String> files = new Vector<String>();
 		// Make two passes, one for Dirs and one for Files. This is #1.
 		for (int i = 0; i < ol.size(); i++) {
 			String thisObject = (String) ol.elementAt(i);
