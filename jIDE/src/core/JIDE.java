@@ -324,7 +324,7 @@ public class JIDE extends JFrame {
 
 	public synchronized void updateSyntaxHighlighting() {
 		Pattern patternKeyword = Pattern.compile("\\(?\\s*(int|float|char|return|double|void)\\**\\s*\\)?");
-		Pattern patternTrickyKeywords = Pattern.compile("(\\w+(int|float|char|return|double|void)\\w*|\\w*(int|float|char|return|double|void)\\w+");
+		Pattern patternPrint = Pattern.compile("print");
 		Pattern patternInclude = Pattern.compile("#include\\s*(<|\").*(\"|>)");
 		Pattern patternString = Pattern.compile("\".*\"");
 		Runnable syntaxMatcher = new Runnable() {
@@ -340,9 +340,9 @@ public class JIDE extends JFrame {
 					StyleConstants.setForeground(keywordSet, Color.BLUE);
 					StyleConstants.setBold(keywordSet, true);
 
-					SimpleAttributeSet trickyKeywordSet = new SimpleAttributeSet();
-					StyleConstants.setForeground(trickyKeywordSet, Color.BLACK);
-					StyleConstants.setBold(trickyKeywordSet, false);
+					SimpleAttributeSet printSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(printSet, Color.BLACK);
+					StyleConstants.setBold(printSet, false);
 
 					SimpleAttributeSet stringSet = new SimpleAttributeSet();
 					StyleConstants.setForeground(stringSet, Color.RED);
@@ -357,11 +357,11 @@ public class JIDE extends JFrame {
 								matcher.end(1) - matcher.start(1), keywordSet, false);
 					}
 
-					matcher = patternTrickyKeywords
+					matcher = patternPrint
 							.matcher(editor.getStyledDocument().getText(0, editor.getStyledDocument().getLength()));
 					while (matcher.find()) {
 						editor.getStyledDocument().setCharacterAttributes(matcher.start(),
-								matcher.end() - matcher.start(), trickyKeywordSet, false);
+								matcher.end() - matcher.start(), printSet, false);
 					}
 
 					matcher = patternInclude
